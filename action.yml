@@ -47,34 +47,34 @@ outputs:
 runs:
   using: "composite"
   steps:
-  - name: Get latest Github release
-    uses: cardinalby/git-get-release-action@v1
-    id: get-latest-vcpkg-release
-    env:
-      GITHUB_TOKEN: ${{ inputs.token }}
-      VCPKG_ROOT: "${{ github.workspace }}/vcpkg"
-    with:
-      latest: true
-      repo: microsoft/vcpkg
-      prerelease: false
-      draft: false    
-  - name: Determine checkout tag
-    shell: bash
-    id: determine-checkout-revision
-    run: |
-      if [[ "${{ inputs.revision }}" != "" ]]; then
-        echo "vcpkg-revision=${{ inputs.revision }}" >> $GITHUB_OUTPUT
-      else
-        echo "vcpkg-revision=${{ steps.get-latest-vcpkg-release.outputs.tag_name }}" >> $GITHUB_OUTPUT
-      fi
-    env:
-      VCPKG_ROOT: "${{ github.workspace }}/vcpkg"
+#  - name: Get latest Github release
+#    uses: cardinalby/git-get-release-action@v1
+#    id: get-latest-vcpkg-release
+#    env:
+#      GITHUB_TOKEN: ${{ inputs.token }}
+#      VCPKG_ROOT: "${{ github.workspace }}/vcpkg"
+#    with:
+#      latest: true
+#      repo: microsoft/vcpkg
+#      prerelease: false
+#      draft: false
+#  - name: Determine checkout tag
+#    shell: bash
+#    id: determine-checkout-revision
+#    run: |
+#      if [[ "${{ inputs.revision }}" != "" ]]; then
+#        echo "vcpkg-revision=${{ inputs.revision }}" >> $GITHUB_OUTPUT
+#      else
+#        echo "vcpkg-revision=${{ steps.get-latest-vcpkg-release.outputs.tag_name }}" >> $GITHUB_OUTPUT
+#      fi
+#    env:
+#      VCPKG_ROOT: "${{ github.workspace }}/vcpkg"
   - name: checkout-vcpkg
     uses: actions/checkout@v3
     with:
       path: ${{ github.workspace }}/vcpkg
       repository: microsoft/vcpkg
-      ref: '${{ steps.determine-checkout-revision.outputs.vcpkg-revision }}'
+#      ref: '${{ steps.determine-checkout-revision.outputs.vcpkg-revision }}'
       fetch-depth: ${{ inputs.fetch-depth }}
     env:
       VCPKG_ROOT: "${{ github.workspace }}/vcpkg"
@@ -133,7 +133,7 @@ runs:
   - name: cache-vcpkg-archives
     if: ${{ inputs.disable_cache != 'true' }} && inputs.github-binarycache != 'true' && inputs.github-binarycache != true
     id: cache-vcpkg-archives
-    uses: pat-s/always-upload-cache@v3
+    uses: actions/cache/save@v4
     with:
       path: ${{ github.workspace }}/vcpkg_cache
       key: ${{ runner.os }}-${{ inputs.triplet }}-vcpkg-${{ hashFiles('vcpkg/vcpkg_dry_run.txt') }}-${{ inputs.cache-key }}
