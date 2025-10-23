@@ -1,10 +1,10 @@
 # vcpkg-action
 
-`vcpkg-action` is a simple action to build and cache vcpkg packages. It supports all platforms. It has two unique
+`vcpkg-action` is a simple action to build and cache vcpkg packages. It supports all platforms. It has unique
 features:
 
 * Simplicity
-* Uses vcpkg built-in GitHub caching feature (NEW) OR Use of a "dry-run" build to generate a unique cache key for the configuration. 
+* Use of a "dry-run" build to generate a unique cache key for the configuration. 
 * Optionally supports reading `vcpkg.json` manifest files
 
 `vcpkg` is cloned to the `${{ github.workspace }}\vcpkg` directory, and the build products are located in
@@ -22,21 +22,20 @@ cmake ${{ steps.vcpkg.outputs.vcpkg-cmake-config }} -S <src_dir> -B <build_dir>
 
 Include other configuration settings as normal in the cmake command. The vcpkg-action step must have the id `vcpkg`.
 
-Another directory named `vcpkg_cache` is created in the workspace root. This directory is used to store the cache files, 
-and is cached using `pat-s/always-upload-cache@v3`. The cache key is automatically generated, 
+Another directory named `vcpkg_cache` is created in the temp directory. This directory is used to store the cache files, 
+and is cached using `actions/cache@v4`. The cache key is automatically generated, 
 but can also be modified using the `cache-key` argument.
 
 Simple usage example:
 
 ```yaml
 - name: vcpkg build
-  uses: johnwason/vcpkg-action@v6
+  uses: johnwason/vcpkg-action@v7
   id: vcpkg
   with:
     pkgs: boost-date-time boost-system
     triplet: x64-windows-release
     token: ${{ github.token }}
-    github-binarycache: true
 ```
 
 Simple manifest example:
@@ -44,19 +43,18 @@ Simple manifest example:
 ```yaml
 - name: vcpkg build
   id: vcpkg
-  uses: johnwason/vcpkg-action@v6
+  uses: johnwason/vcpkg-action@v7
   with:
     manifest-dir: ${{ github.workspace }} # Set to directory containing vcpkg.json
     triplet: x64-windows-release
     token: ${{ github.token }}
-    github-binarycache: true
 ```
 
 
 ## Usage
 
 ```yaml
-- uses: johnwason/vcpkg-action@v6
+- uses: johnwason/vcpkg-action@v7
   with:
     # The vcpkg packages to build, separated by spaces. Cannot be used with manifest-dir
     pkgs: ''
@@ -76,12 +74,12 @@ Simple manifest example:
     token: ''
     # Directory containing vcpkg.json manifest file. Cannot be used with pkgs.
     manifest-dir: ''
-    # "Use vcpkg built-in GitHub binary caching if "true". If not specified, will use the dry-run based file cache."
-    # Recommended set to "true"
-    github-binarycache: ''
     #Fetch depth for vcpkg checkout. Defaults to "1"
     fetch-depth: '1'
-
+    # Collect logs. Can be set to "always", "on-failure", or "never". Defaults to "" for "never".
+    collect-logs: ''
+    # a subdirectory of the action base folder into which the VCPKG will be installed. Default is 'vcpkg'.
+    vcpkg-subdir: 'vcpkg'
 ```
 
 ## Advanced Example
@@ -96,15 +94,15 @@ jobs:
     strategy:
       matrix:
         config:
-        - os: ubuntu-20.04
+        - os: ubuntu-22.04
           vcpkg_triplet: x64-linux-release
-        - os: macos-11
+        - os: macos-13
           vcpkg_triplet: x64-osx-release
-        - os: windows-2019
+        - os: windows-2022
           vcpkg_triplet: x64-windows-release
     steps:
       - name: vcpkg build
-        uses: johnwason/vcpkg-action@v6
+        uses: johnwason/vcpkg-action@v7
         id: vcpkg
         with:
           pkgs: boost-date-time
@@ -112,6 +110,5 @@ jobs:
           cache-key: ${{ matrix.config.os }}
           revision: master
           token: ${{ github.token }}
-          github-binarycache: true
 ```
 
